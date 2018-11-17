@@ -83,29 +83,6 @@ public class PostgreSQL {
             String queryToFormat="UPDATE public.users SET command = '%s', subscribe = '%s', lat = '%s', lon = '%s' WHERE userchatid ='%s'";
             String qq=String.format(queryToFormat,user.getCommand(),user.isSubscribe(),user.getCoord().getLat(),user.getCoord().getLon(),user.getChatId());
             statement.execute(qq);
-            String fullUserUpdate="UPDATE public.users SET command = '"+user.getCommand()+
-                    "', subscribe = '"+user.isSubscribe()+
-                    "', lat = '"+user.getCoord().getLat()+
-                    "', lon = '"+user.getCoord().getLon()+
-                    "' WHERE userchatid ='"+user.getChatId()+"'";
-            //statement.execute(fullUserUpdate);
-            /*
-            String updateUserCommand=null;
-            String updateUserCoord=null;
-            String updateUserSubscribe=null;
-
-            if(user.getCommand()!=null){
-                updateUserCommand="UPDATE public.users SET command = '"+user.getCommand()+"' WHERE userchatid = "+"("+user.getChatId()+")";
-                statement.executeUpdate(updateUserCommand);
-            }
-            if(user.getCoord()!=null){
-                updateUserCoord="UPDATE public.users SET lat = '"+user.getCoord().getLat()+"' WHERE userchatid = ("+user.getChatId()+")";
-                statement.executeUpdate(updateUserCoord);
-            }
-            if(user.isSubscribe()){
-                updateUserSubscribe="UPDATE public.users SET lat = '"+user.isSubscribe()+"' WHERE userchatid = ("+user.getChatId()+")";
-                statement.executeUpdate(updateUserSubscribe);
-            }*/
         }catch (SQLException e){
             e.printStackTrace();
         }

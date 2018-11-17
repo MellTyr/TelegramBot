@@ -3,6 +3,7 @@ package bot;
 import Converters.ConvertersFabric;
 import Converters.CurrentWeather;
 import Converters.Forecast;
+import DataBase.PostgreSQL;
 import Interfaces.IConvertator;
 import Interfaces.ISender;
 import User.UserModel;
@@ -53,9 +54,9 @@ public class BotExample extends TelegramLongPollingBot {
 
 
         if (update.hasMessage()) {
-
             if (update.getMessage().hasText()) {
                 switch (update.getMessage().getText()) {
+
                     case "/start":
                         StringBuilder sb = new StringBuilder();
                         for (BotCommands str : BotCommands.values()
