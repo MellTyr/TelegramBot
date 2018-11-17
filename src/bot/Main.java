@@ -70,6 +70,12 @@ public class Main {
             }
         });
 
+
+        IUser user=PostgreSQL.getUsetFromDB(6);
+        System.out.println(user.getChatId());
+        System.out.println(user.getCoord().getLat());
+        System.out.println(user.getCommand());
+        System.out.println(user.isSubscribe());
     }
 
     private static void Register() {

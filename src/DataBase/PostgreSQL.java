@@ -8,7 +8,11 @@ import java.sql.*;
 
 
 public class PostgreSQL {
-
+    static final String CHAT_ID_COLUMN="userchatid";
+    static final String SUBSCRIBE_COLUMN="subscribe";
+    static final String LAT_COLUMN="lat";
+    static final String LON_COLUMN="lon";
+    static final String COMMAND_COLUMN="command";
 
     static final String DB_URL = "jdbc:postgresql://127.0.0.1:5432/UserTelegram";
     static final String USER = "postgres";
@@ -102,6 +106,64 @@ public class PostgreSQL {
             e.printStackTrace();
         }
         return dbConnection;
+    }
+
+    public static IUser getUsetFromDB(int chatId){
+        Connection connection=getDBConnection();
+        String selectQuery="SELECT userchatid, subscribe, lat, lon, command FROM public.users WHERE userchatid = '%s'";
+        try{
+            Statement statement=connection.createStatement();
+            ResultSet rs=statement.executeQuery(String.format(selectQuery,chatId));
+            while (rs.next()){
+                return new IUser() {
+                    @Override
+                    public String getCommand() {
+                        try {
+                            return rs.getString(COMMAND_COLUMN);
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                            return null;
+                        }
+                    }
+
+                    @Override
+                    public boolean isSubscribe() {
+                        try {
+                            return rs.getBoolean(SUBSCRIBE_COLUMN);
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                            return false;
+                        }
+                    }
+
+                    @Override
+                    public long getChatId() {
+                        try {
+                            return rs.getLong(CHAT_ID_COLUMN);
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                            return 0;
+                        }
+                    }
+
+                    @Override
+                    public coord getCoord() {
+                        try{
+                            return new coord(rs.getDouble(LON_COLUMN),rs.getDouble(LAT_COLUMN));
+                        }
+                        catch (SQLException e){
+                            e.printStackTrace();
+                            return new coord();
+                        }
+
+                    }
+                };
+            }
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return null;
+
     }
 
     private void TestConnection() {
