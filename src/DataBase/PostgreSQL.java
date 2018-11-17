@@ -64,10 +64,10 @@ public class PostgreSQL {
         Connection connection=getDBConnection();
         Statement statement=null;
         if(!ExistInDB(user,connection)){
-            String insertNewUser="INSERT INTO public.users " + "(userchatid) " + "VALUES " + "("+String.valueOf(user.getChatId())+")";
+            String insertNewUser="INSERT INTO public.users (userchatid) VALUES (%s)";
             try{
                 statement=connection.createStatement();
-                statement.executeUpdate(insertNewUser);
+                statement.executeUpdate(String.format(insertNewUser,user.getChatId()));
                 connection.close();
             }
             catch (SQLException e){
@@ -92,6 +92,31 @@ public class PostgreSQL {
         }
     }
 
+    public static void UpdateUser(IUser user, boolean onlyCommand){
+        Connection connection=getDBConnection();
+        Statement statement=null;
+        if(!ExistInDB(user,connection)){
+            NewUser(user);
+        }
+        String queryToFormat;
+        String query;
+        if(!onlyCommand){
+            queryToFormat="UPDATE public.users SET command = '%s', subscribe = '%s', lat = '%s', lon = '%s' WHERE userchatid ='%s'";
+            query=String.format(queryToFormat,user.getCommand(),user.isSubscribe(),user.getCoord().getLat(),user.getCoord().getLon(),user.getChatId());
+        }
+        else{
+            queryToFormat="UPDATE public.users SET command = '%s' WHERE userchatid='%s'";
+            query=String.format(queryToFormat,user.getCommand(),user.getChatId());
+        }
+
+        try{
+            statement=connection.createStatement();
+            statement.execute(query);
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+    }
+
     private static Connection getDBConnection() {
         Connection dbConnection = null;
         try {
@@ -108,7 +133,7 @@ public class PostgreSQL {
         return dbConnection;
     }
 
-    public static IUser getUsetFromDB(int chatId){
+    public static IUser getUsetFromDB(long chatId){
         Connection connection=getDBConnection();
         String selectQuery="SELECT userchatid, subscribe, lat, lon, command FROM public.users WHERE userchatid = '%s'";
         try{

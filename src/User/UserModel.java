@@ -46,5 +46,9 @@ public class UserModel implements HaveCoordinate, IUser {
         this.command = "/start";
         this.coord=new coord();
     }
-
+    public UserModel(long userChatId) {
+        this.command = "/start";
+        this.coord=new coord();
+        this.ChatId=userChatId;
+    }
 }

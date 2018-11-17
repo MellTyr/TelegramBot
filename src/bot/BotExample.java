@@ -6,6 +6,7 @@ import Converters.Forecast;
 import DataBase.PostgreSQL;
 import Interfaces.IConvertator;
 import Interfaces.ISender;
+import Interfaces.IUser;
 import User.UserModel;
 import Weather.Weather;
 import Weather.WeatherApiModel.WeatherForecastModel;
@@ -15,6 +16,7 @@ import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.List;
@@ -24,7 +26,7 @@ import java.util.logging.Level;
 public class BotExample extends TelegramLongPollingBot {
 
     private static BotExample botExample;
-    UserModel user = new UserModel();
+    //UserModel user = new UserModel();
 
     public static BotExample getBotExample() {
         if (botExample == null) {
@@ -44,19 +46,17 @@ public class BotExample extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-
-
         //todo
         //проверка существование ползователя в базе данных
         //
-
-        user.setChatId(update.getMessage().getChatId());
-
-
+        //user.setChatId(update.getMessage().getChatId());
         if (update.hasMessage()) {
+            PostgreSQL.NewUser(new UserModel(update.getMessage().getChatId()));
+            IUser iUser = PostgreSQL.getUsetFromDB(update.getMessage().getChatId());
+            UserModel user=getModelFromDB(iUser);
             if (update.getMessage().hasText()) {
+                user.setCommand(update.getMessage().getText().replace("/",""));
                 switch (update.getMessage().getText()) {
-
                     case "/start":
                         StringBuilder sb = new StringBuilder();
                         for (BotCommands str : BotCommands.values()
@@ -64,28 +64,30 @@ public class BotExample extends TelegramLongPollingBot {
                             sb.append("/").append(str.toString()).append("\n\n");
                         }
                         this.SendToUser(user, sb.toString());
+                        PostgreSQL.UpdateUser(user);
                         break;
 
                     case "/subscribe":
-                        //todo
-                        //метод создания в БД юзера по айди
-                        this.SendToUser(user,"Send me your location for subscribe");
-                        //todo
-                        //переделать на БД
-                        user.setCommand("subscribe");
+                        this.SendToUser(user, "Send me your location for subscribe");
+                        PostgreSQL.UpdateUser(user);
+                        break;
+
+                    case "/unsubscribe":
+                        this.SendToUser(user,"you have unsubscribed");
+                        user.setSubscribe(false);
+                        PostgreSQL.UpdateUser(user);
                         break;
 
                     case "/current":
-                        this.SendToUser(user,"Send me your location for current");
-                        //todo
-                        //переделать на БД
-                        user.setCommand("current");
+                        this.SendToUser(user, "Send me your location for current");
+                        PostgreSQL.UpdateUser(user);
                         break;
                     case "/forecast":
-                        this.SendToUser(user,"Send me your location for forecast");
-                        //todo
-                        //переделать на БД
-                        user.setCommand("forecast");
+                        this.SendToUser(user, "Send me your location for forecast");
+                        PostgreSQL.UpdateUser(user);
+                        break;
+                    default:
+                        this.SendToUser(user,"Wrong command! try again!");
                         break;
                 }
             }
@@ -95,7 +97,7 @@ public class BotExample extends TelegramLongPollingBot {
                 });
                 WeatherModel weatherModel = null;
                 WeatherForecastModel weatherForecastModel = null;
-                switch (user.getCommand()) {
+                switch (user.getCommand().trim()) {
                     case "start":
                     case "current": {
                         try {
@@ -103,6 +105,10 @@ public class BotExample extends TelegramLongPollingBot {
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
+                        String current = ConvertersFabric.GetConvertator(user).Convert(weatherModel);
+                        user.setCommand(BotCommands.start.toString());
+                        SendToUser(user, current);
+                        PostgreSQL.UpdateUser(user,true);
                         break;
                     }
                     case "forecast": {
@@ -111,41 +117,38 @@ public class BotExample extends TelegramLongPollingBot {
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
-                        break;
-                    }
-                }
-
-                switch (user.getCommand()) {
-                    case "subscribe":
-                        //todo
-                        //реализовать подписку
-                        //
-                        SendToUser(user, "Вы подписались на ежедневную рассылку");
-                        break;
-                    case "start":
-                    case "current":
-                        String current = ConvertersFabric.GetConvertator(user).Convert(weatherModel);
-                        //System.out.println("qweasd");
-                        SendToUser(user, current);
-                        break;
-                    case "forecast":{
-                        StringBuilder sbq=new StringBuilder();
-                        for(int i=0;i<3;i++) {
+                        StringBuilder sb = new StringBuilder();
+                        for (int i = 0; i < 3; i++) {
                             String forecast = ConvertersFabric.GetConvertator(user).Convert(weatherForecastModel.getList()[i]);
-                            sbq.append(forecast).append("\n");
-                            sbq.append(i);
+                            sb.append(forecast).append("\n");
+                            sb.append(i);
                         }
-                        sbq.append("22!222");
-
-                        SendToUser(user,sbq.toString());
+                        sb.append("22!222");
+                        user.setCommand(BotCommands.start.toString());
+                        PostgreSQL.UpdateUser(user,true);
+                        SendToUser(user, sb.toString());
                         break;
                     }
+                    case "subscribe":
+                        user.setSubscribe(true);
+                        user.setCommand(BotCommands.start.toString());
+                        PostgreSQL.UpdateUser(user);
+                        SendToUser(user, "you subscribed to the newsletter at 8 am");
+                        break;
                 }
             }
         }
     }
 
-    private void SendToUser(UserModel user, String msg) {
+    private static UserModel getModelFromDB(IUser iUser){
+        UserModel userModel=new UserModel(iUser.getChatId());
+        userModel.setCommand(iUser.getCommand());
+        userModel.setCoord(iUser.getCoord());
+        userModel.setSubscribe(iUser.isSubscribe());
+        return userModel;
+    }
+
+    private void SendToUser(IUser user, String msg) {
         SendMessage message = new SendMessage();
         message.setChatId(user.getChatId())
                 .setText(msg);

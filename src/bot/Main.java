@@ -17,9 +17,9 @@ public class Main {
 
     public static void main(String[] args) {
         //PostgreSQL.TestExistInDB();
-        TestDB();
+        //TestDB();
 
-        //Register();
+        Register();
 
         /*Weather qq=Weather.getWeather();
         WeatherForecastModel forec=qq.GetForecastWeater("http://api.openweathermap.org/data/2.5/forecast?lat=59.950798&lon=30.230684&appid=57b2f40f256e95e8c450926b446c9130");
