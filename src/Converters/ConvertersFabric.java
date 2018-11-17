@@ -7,10 +7,10 @@ public class ConvertersFabric {
     static public IConvertator GetConvertator(UserModel user){
         IConvertator convertator=null;
         switch (user.getCommand()){
-            case "/forecast":
+            case "forecast":
                 convertator=new Forecast();
                 break;
-            case "/current":
+            case "current":
                 convertator=new CurrentWeather();
                 break;
                 default:
