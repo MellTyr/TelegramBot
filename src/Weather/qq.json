@@ -1,0 +1,26 @@
+{"coord":{"lon":30.25,"lat":59.92},
+  "weather":[{"id":620,"main":"Snow",
+    "description":"light shower snow",
+    "icon":"13d"}],
+  "base":"stations",
+  "main":{
+    "temp":274.15,
+    "pressure":1020,
+    "humidity":86,
+    "temp_min":274.15,
+    "temp_max":274.15},
+  "visibility":9000,
+  "wind":{"speed":4,"deg":40},
+  "clouds":{"all":90},
+  "dt":1540729800,
+  "sys":{
+    "type":1,
+    "id":7267,
+    "message":0.1127,
+    "country":"RU",
+    "sunrise":1540703490,
+    "sunset":1540735976},
+  "id":536203,
+  "name":"Sankt-Peterburg",
+  "cod":200
+}
