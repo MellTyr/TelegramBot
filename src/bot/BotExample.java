@@ -1,26 +1,17 @@
 package bot;
 
 import Converters.ConvertersFabric;
-import Converters.CurrentWeather;
-import Converters.Forecast;
 import DataBase.PostgreSQL;
-import Interfaces.IConvertator;
-import Interfaces.ISender;
 import Interfaces.IUser;
 import User.UserModel;
 import Weather.Weather;
 import Weather.WeatherApiModel.WeatherForecastModel;
 import Weather.WeatherApiModel.WeatherModel;
 import Weather.WeatherApiModel.coord;
-import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-
-import java.util.List;
-import java.util.logging.Level;
 
 
 public class BotExample extends TelegramLongPollingBot {
@@ -163,7 +154,7 @@ public class BotExample extends TelegramLongPollingBot {
         return userModel;
     }
 
-    private void SendToUser(IUser user, String msg) {
+    public void SendToUser(IUser user, String msg) {
         SendMessage message = new SendMessage();
         message.setChatId(user.getChatId())
                 .setText(msg);

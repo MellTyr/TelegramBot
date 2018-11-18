@@ -1,18 +1,21 @@
 package DataBase;
 
 import Interfaces.IUser;
+import User.UserModel;
 import Weather.WeatherApiModel.Sys;
 import Weather.WeatherApiModel.coord;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class PostgreSQL {
-    static final String CHAT_ID_COLUMN="userchatid";
-    static final String SUBSCRIBE_COLUMN="subscribe";
-    static final String LAT_COLUMN="lat";
-    static final String LON_COLUMN="lon";
-    static final String COMMAND_COLUMN="command";
+    static final String CHAT_ID_COLUMN = "userchatid";
+    static final String SUBSCRIBE_COLUMN = "subscribe";
+    static final String LAT_COLUMN = "lat";
+    static final String LON_COLUMN = "lon";
+    static final String COMMAND_COLUMN = "command";
 
     static final String DB_URL = "jdbc:postgresql://127.0.0.1:5432/UserTelegram";
     static final String USER = "postgres";
@@ -24,8 +27,8 @@ public class PostgreSQL {
         try {
             connection = getDBConnection();
             statement = connection.createStatement();
-            ResultSet result=statement.executeQuery(getUser);
-            while (result.next()){
+            ResultSet result = statement.executeQuery(getUser);
+            while (result.next()) {
                 return true;
             }
         } catch (SQLException e) {
@@ -35,8 +38,8 @@ public class PostgreSQL {
     }
 
     public static void TestExistInDB() {
-        Connection connection=getDBConnection();
-        Boolean exist=ExistInDB(new IUser() {
+        Connection connection = getDBConnection();
+        Boolean exist = ExistInDB(new IUser() {
             @Override
             public String getCommand() {
                 return null;
@@ -56,65 +59,76 @@ public class PostgreSQL {
             public boolean isSubscribe() {
                 return false;
             }
-        },connection);
+        }, connection);
         System.out.println(exist);
     }
 
     public static void NewUser(IUser user) {
-        Connection connection=getDBConnection();
-        Statement statement=null;
-        if(!ExistInDB(user,connection)){
-            String insertNewUser="INSERT INTO public.users (userchatid) VALUES (%s)";
-            try{
-                statement=connection.createStatement();
-                statement.executeUpdate(String.format(insertNewUser,user.getChatId()));
+        Connection connection = getDBConnection();
+        Statement statement = null;
+        if (!ExistInDB(user, connection)) {
+            String insertNewUser = "INSERT INTO public.users (userchatid) VALUES (%s)";
+            try {
+                statement = connection.createStatement();
+                statement.executeUpdate(String.format(insertNewUser, user.getChatId()));
                 connection.close();
-            }
-            catch (SQLException e){
+            } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    public static void UpdateUser(IUser user){
-        Connection connection=getDBConnection();
-        Statement statement=null;
-        if(!ExistInDB(user,connection)){
+    public static void UpdateUser(IUser user) {
+        Connection connection = getDBConnection();
+        Statement statement = null;
+        if (!ExistInDB(user, connection)) {
             NewUser(user);
         }
-        try{
-            statement=connection.createStatement();
-            String queryToFormat="UPDATE public.users SET command = '%s', subscribe = '%s', lat = '%s', lon = '%s' WHERE userchatid ='%s'";
-            String qq=String.format(queryToFormat,user.getCommand(),user.isSubscribe(),user.getCoord().getLat(),user.getCoord().getLon(),user.getChatId());
+        try {
+            statement = connection.createStatement();
+            String queryToFormat = "UPDATE public.users SET command = '%s', subscribe = '%s', lat = '%s', lon = '%s' WHERE userchatid ='%s'";
+            String qq = String.format(queryToFormat, user.getCommand(), user.isSubscribe(), user.getCoord().getLat(), user.getCoord().getLon(), user.getChatId());
             statement.execute(qq);
-        }catch (SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    public static void UpdateUser(IUser user, boolean onlyCommand){
-        Connection connection=getDBConnection();
-        Statement statement=null;
-        if(!ExistInDB(user,connection)){
+    public static void UpdateUser(IUser user, boolean onlyCommand) {
+        Connection connection = getDBConnection();
+        Statement statement = null;
+        if (!ExistInDB(user, connection)) {
             NewUser(user);
         }
         String queryToFormat;
         String query;
-        if(!onlyCommand){
-            queryToFormat="UPDATE public.users SET command = '%s', subscribe = '%s', lat = '%s', lon = '%s' WHERE userchatid ='%s'";
-            query=String.format(queryToFormat,user.getCommand(),user.isSubscribe(),user.getCoord().getLat(),user.getCoord().getLon(),user.getChatId());
-        }
-        else{
-            queryToFormat="UPDATE public.users SET command = '%s' WHERE userchatid='%s'";
-            query=String.format(queryToFormat,user.getCommand(),user.getChatId());
+        if (!onlyCommand) {
+            queryToFormat = "UPDATE public.users SET command = '%s', subscribe = '%s', lat = '%s', lon = '%s' WHERE userchatid ='%s'";
+            query = String.format(queryToFormat, user.getCommand(), user.isSubscribe(), user.getCoord().getLat(), user.getCoord().getLon(), user.getChatId());
+        } else {
+            queryToFormat = "UPDATE public.users SET command = '%s' WHERE userchatid='%s'";
+            query = String.format(queryToFormat, user.getCommand(), user.getChatId());
         }
 
-        try{
-            statement=connection.createStatement();
+        try {
+            statement = connection.createStatement();
             statement.execute(query);
-        }catch (SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public static List<IUser> getUsersWithSubscribe() {
+        Connection connection = getDBConnection();
+        String selectQuery = "SELECT userchatid, subscribe, lat, lon, command FROM public.users WHERE subscribe = 'true'";
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet rs = statement.executeQuery(selectQuery);
+            return UsersFromRS(rs);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     private static Connection getDBConnection() {
@@ -133,62 +147,35 @@ public class PostgreSQL {
         return dbConnection;
     }
 
-    public static IUser getUsetFromDB(long chatId){
-        Connection connection=getDBConnection();
-        String selectQuery="SELECT userchatid, subscribe, lat, lon, command FROM public.users WHERE userchatid = '%s'";
+    public static IUser getUsetFromDB(long chatId) {
+        Connection connection = getDBConnection();
+        String selectQuery = "SELECT userchatid, subscribe, lat, lon, command FROM public.users WHERE userchatid = '%s'";
+        //IUser iUser;
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet rs = statement.executeQuery(String.format(selectQuery, chatId));
+            return UsersFromRS(rs).get(0);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static List<IUser> UsersFromRS(ResultSet rs){
+        List<IUser> users = new ArrayList<>();
         try{
-            Statement statement=connection.createStatement();
-            ResultSet rs=statement.executeQuery(String.format(selectQuery,chatId));
-            while (rs.next()){
-                return new IUser() {
-                    @Override
-                    public String getCommand() {
-                        try {
-                            return rs.getString(COMMAND_COLUMN);
-                        } catch (SQLException e) {
-                            e.printStackTrace();
-                            return null;
-                        }
-                    }
-
-                    @Override
-                    public boolean isSubscribe() {
-                        try {
-                            return rs.getBoolean(SUBSCRIBE_COLUMN);
-                        } catch (SQLException e) {
-                            e.printStackTrace();
-                            return false;
-                        }
-                    }
-
-                    @Override
-                    public long getChatId() {
-                        try {
-                            return rs.getLong(CHAT_ID_COLUMN);
-                        } catch (SQLException e) {
-                            e.printStackTrace();
-                            return 0;
-                        }
-                    }
-
-                    @Override
-                    public coord getCoord() {
-                        try{
-                            return new coord(rs.getDouble(LON_COLUMN),rs.getDouble(LAT_COLUMN));
-                        }
-                        catch (SQLException e){
-                            e.printStackTrace();
-                            return new coord();
-                        }
-
-                    }
-                };
+            while (rs.next()) {
+                UserModel userModel=new UserModel();
+                userModel.setCommand(rs.getString(COMMAND_COLUMN));
+                userModel.setSubscribe(rs.getBoolean(SUBSCRIBE_COLUMN));
+                userModel.setCoord(new coord(rs.getDouble(LON_COLUMN), rs.getDouble(LAT_COLUMN)));
+                userModel.setChatId(rs.getLong(CHAT_ID_COLUMN));
+                users.add(userModel);
             }
         }catch (SQLException e){
             e.printStackTrace();
         }
-        return null;
-
+        return users;
     }
 
     private void TestConnection() {

@@ -2,6 +2,7 @@ package bot;
 
 import DataBase.PostgreSQL;
 import Interfaces.IUser;
+import SchedulerForWhether.SenderByTime;
 import Weather.Weather;
 import Weather.WeatherApiModel.Sys;
 import Weather.WeatherApiModel.WeatherForecastModel;
@@ -16,14 +17,9 @@ public class Main {
 
 
     public static void main(String[] args) {
-        //PostgreSQL.TestExistInDB();
-        //TestDB();
-
         Register();
-
-        /*Weather qq=Weather.getWeather();
-        WeatherForecastModel forec=qq.GetForecastWeater("http://api.openweathermap.org/data/2.5/forecast?lat=59.950798&lon=30.230684&appid=57b2f40f256e95e8c450926b446c9130");
-        System.out.println(forec.getList().length);*/
+        SenderByTime senderByTime=SenderByTime.getSenderByTime();
+        senderByTime.senders();
     }
 
     private static void TestDB() {
