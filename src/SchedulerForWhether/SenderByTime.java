@@ -11,8 +11,6 @@ import Weather.WeatherApiModel.coord;
 import bot.BotCommands;
 import bot.BotExample;
 import it.sauronsoftware.cron4j.Scheduler;
-import it.sauronsoftware.cron4j.SchedulingPattern;
-import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 
 import java.util.List;
 
@@ -29,6 +27,7 @@ public class SenderByTime {
         return senderByTime;
     }
 
+    /*запуск планировщика по шаблону*/
     public void senders(){
         Scheduler scheduler=new Scheduler();
         scheduler.schedule("00 08 * * *", new Runnable() {
@@ -41,6 +40,7 @@ public class SenderByTime {
         scheduler.start();
     }
 
+    /*отправка прогноза на 12 часов каждому из списка полученного из бд*/
     private void send(){
        List<IUser> users=PostgreSQL.getUsersWithSubscribe();
        for(IUser user:users){
@@ -67,7 +67,7 @@ public class SenderByTime {
            });
            Weather weather=Weather.getWeather();
            WeatherModel[] weatherModel=weather.GetForecastWeater(user).getList();
-           for(int i=0;i<3;i++){
+           for(int i=0;i<4;i++){
                BotExample.getBotExample().SendToUser(user,converter.Convert(weatherModel[4]));
            }
        }

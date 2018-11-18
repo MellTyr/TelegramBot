@@ -22,58 +22,6 @@ public class Main {
         senderByTime.senders();
     }
 
-    private static void TestDB() {
-        PostgreSQL.NewUser(new IUser() {
-            @Override
-            public String getCommand() {
-                return null;
-            }
-
-            @Override
-            public long getChatId() {
-                return 5;
-            }
-
-            @Override
-            public coord getCoord() {
-                return null;
-            }
-
-            @Override
-            public boolean isSubscribe() {
-                return false;
-            }
-        });
-        PostgreSQL.UpdateUser(new IUser() {
-            @Override
-            public boolean isSubscribe() {
-                return true;
-            }
-
-            @Override
-            public String getCommand() {
-                return null;
-            }
-
-            @Override
-            public long getChatId() {
-                return 7;
-            }
-
-            @Override
-            public coord getCoord() {
-                return new coord(1,2);
-            }
-        });
-
-
-        IUser user=PostgreSQL.getUsetFromDB(6);
-        System.out.println(user.getChatId());
-        System.out.println(user.getCoord().getLat());
-        System.out.println(user.getCommand());
-        System.out.println(user.isSubscribe());
-    }
-
     private static void Register() {
         System.getProperties().put("proxySet", "true");
         System.getProperties().put("socksProxyHost", "127.0.0.1");

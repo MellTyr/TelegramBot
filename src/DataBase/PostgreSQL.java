@@ -9,6 +9,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/*подключение к БД*/
 
 public class PostgreSQL {
     static final String CHAT_ID_COLUMN = "userchatid";
@@ -21,6 +22,8 @@ public class PostgreSQL {
     static final String USER = "postgres";
     static final String PASS = "A11enWalker";
 
+
+    /*проверка существования пользователя в БД*/
     private static Boolean ExistInDB(IUser user, Connection connection) {
         Statement statement = null;
         String getUser = "SELECT userchatid FROM public.users WHERE userchatid=" + user.getChatId();
@@ -37,32 +40,7 @@ public class PostgreSQL {
         return false;
     }
 
-    public static void TestExistInDB() {
-        Connection connection = getDBConnection();
-        Boolean exist = ExistInDB(new IUser() {
-            @Override
-            public String getCommand() {
-                return null;
-            }
-
-            @Override
-            public long getChatId() {
-                return 0;
-            }
-
-            @Override
-            public coord getCoord() {
-                return null;
-            }
-
-            @Override
-            public boolean isSubscribe() {
-                return false;
-            }
-        }, connection);
-        System.out.println(exist);
-    }
-
+   /*добавление нового пользователя в бд*/
     public static void NewUser(IUser user) {
         Connection connection = getDBConnection();
         Statement statement = null;
@@ -78,22 +56,9 @@ public class PostgreSQL {
         }
     }
 
-    public static void UpdateUser(IUser user) {
-        Connection connection = getDBConnection();
-        Statement statement = null;
-        if (!ExistInDB(user, connection)) {
-            NewUser(user);
-        }
-        try {
-            statement = connection.createStatement();
-            String queryToFormat = "UPDATE public.users SET command = '%s', subscribe = '%s', lat = '%s', lon = '%s' WHERE userchatid ='%s'";
-            String qq = String.format(queryToFormat, user.getCommand(), user.isSubscribe(), user.getCoord().getLat(), user.getCoord().getLon(), user.getChatId());
-            statement.execute(qq);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
+    /*
+     * обновление пользователя в бд
+     */
     public static void UpdateUser(IUser user, boolean onlyCommand) {
         Connection connection = getDBConnection();
         Statement statement = null;
@@ -118,6 +83,8 @@ public class PostgreSQL {
         }
     }
 
+
+    /*получение списка всех подписанных пользователей*/
     public static List<IUser> getUsersWithSubscribe() {
         Connection connection = getDBConnection();
         String selectQuery = "SELECT userchatid, subscribe, lat, lon, command FROM public.users WHERE subscribe = 'true'";
@@ -130,6 +97,7 @@ public class PostgreSQL {
         }
         return null;
     }
+
 
     private static Connection getDBConnection() {
         Connection dbConnection = null;
@@ -147,13 +115,14 @@ public class PostgreSQL {
         return dbConnection;
     }
 
+    /*получение модели пользователя по его id */
     public static IUser getUsetFromDB(long chatId) {
         Connection connection = getDBConnection();
         String selectQuery = "SELECT userchatid, subscribe, lat, lon, command FROM public.users WHERE userchatid = '%s'";
-        //IUser iUser;
         try {
             Statement statement = connection.createStatement();
             ResultSet rs = statement.executeQuery(String.format(selectQuery, chatId));
+            /*зная что пользователь с таким id один в бд, берем первое значение из RS*/
             return UsersFromRS(rs).get(0);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -161,61 +130,21 @@ public class PostgreSQL {
         return null;
     }
 
-    private static List<IUser> UsersFromRS(ResultSet rs){
+    /*получение списка пользователей из ResultSet ответа бд*/
+    private static List<IUser> UsersFromRS(ResultSet rs) {
         List<IUser> users = new ArrayList<>();
-        try{
+        try {
             while (rs.next()) {
-                UserModel userModel=new UserModel();
+                UserModel userModel = new UserModel();
                 userModel.setCommand(rs.getString(COMMAND_COLUMN));
                 userModel.setSubscribe(rs.getBoolean(SUBSCRIBE_COLUMN));
                 userModel.setCoord(new coord(rs.getDouble(LON_COLUMN), rs.getDouble(LAT_COLUMN)));
                 userModel.setChatId(rs.getLong(CHAT_ID_COLUMN));
                 users.add(userModel);
             }
-        }catch (SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
         }
         return users;
-    }
-
-    private void TestConnection() {
-        System.out.println("Testing connection to PostgreSQL JDBC");
-        try {
-            Class.forName("org.postgresql.Driver");
-        } catch (ClassNotFoundException e) {
-            System.out.println("PostgreSQL JDBC Driver is not found. Include it in your library path ");
-            e.printStackTrace();
-            return;
-        }
-
-        System.out.println("PostgreSQL JDBC Driver successfully connected");
-        Connection connection = null;
-
-        try {
-            connection = DriverManager
-                    .getConnection(DB_URL, USER, PASS);
-
-        } catch (SQLException e) {
-            System.out.println("Connection Failed");
-            e.printStackTrace();
-            return;
-        }
-
-        if (connection != null) {
-            System.out.println("You successfully connected to database now");
-        } else {
-            System.out.println("Failed to make connection to database");
-        }
-        try {
-            Statement stmt = connection.createStatement();
-            ResultSet resultSet = stmt.executeQuery("SELECT * FROM public.users");
-
-            while (resultSet.next()) {
-                // String str=resultSet.getString("userid")+" :"+resultSet.getString("lat");
-                System.out.println(resultSet.getString(2) + "qweqwe");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 }

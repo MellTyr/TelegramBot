@@ -5,6 +5,9 @@ import Interfaces.IUser;
 import User.UserModel;
 
 public class ConvertersFabric {
+
+    /*
+    * получение конвертера в зависимости от команды юзера*/
     static public IConvertator GetConvertator(IUser user){
         IConvertator convertator=null;
         switch (user.getCommand()){

@@ -9,13 +9,15 @@ import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+/*начальный класс с общими методами для создания конвертеров моделей, полученных от api погоды*/
 public abstract class Converter implements IConvertator {
+
+
     public abstract String Convert(WeatherModel model);
+
+
     String WeatherConvert(WeatherModel model){
         StringBuilder sb=new StringBuilder();
-        /*for (Weather weater:model.getWeather()
-        ) {sb.append(weater.getDescription()).append("\n");
-        }*/
         for(int i=0;i<model.getWeather().length;i++){
             sb.append(model.getWeather()[i].getDescription());
             if(i<model.getWeather().length-1){
@@ -24,7 +26,9 @@ public abstract class Converter implements IConvertator {
         }
         return sb.toString();
     }
+
     NumberFormat format=new DecimalFormat("#.00");
+
     String WindDegConvert (WeatherModel model){
         double grad=model.getWind().getDeg();
         if((grad>=0&&grad<=22.5)||(337.5<grad&&grad<=360))
@@ -45,6 +49,8 @@ public abstract class Converter implements IConvertator {
             return "NW";
         return "NEWS";
     }
+
+
     String ConvertTime(long unixTime){
         Date time=new Date(unixTime*1000);
         SimpleDateFormat formatoToHMS=new SimpleDateFormat("HH:mm:ss");
