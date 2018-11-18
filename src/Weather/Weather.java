@@ -1,17 +1,13 @@
 package Weather;
 
 import Interfaces.HaveCoordinate;
-import Interfaces.ISender;
 import Weather.WeatherApiModel.WeatherForecastModel;
 import Weather.WeatherApiModel.WeatherModel;
 import com.google.gson.*;
-import org.json.JSONObject;
 
 import java.io.*;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.List;
 
 public class Weather {
     private static Weather weather;
