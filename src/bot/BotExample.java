@@ -107,7 +107,6 @@ public class BotExample extends TelegramLongPollingBot {
                 for (int i = 0; i < 3; i++) {
                     String forecast = ConvertersFabric.GetConvertator(user).Convert(weatherForecastModel.getList()[i]);
                     sb.append(forecast).append("\n");
-                    sb.append(i);
                 }
                 sb.append("/start\n");
                 user.setCommand(BotCommands.start.toString());
