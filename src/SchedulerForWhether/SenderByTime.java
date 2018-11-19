@@ -68,7 +68,7 @@ public class SenderByTime {
            Weather weather=Weather.getWeather();
            WeatherModel[] weatherModel=weather.GetForecastWeater(user).getList();
            for(int i=0;i<4;i++){
-               BotExample.getBotExample().SendToUser(user,converter.Convert(weatherModel[4]));
+               BotExample.getBotExample().SendToUser(user,converter.Convert(weatherModel[i]));
            }
        }
     }
